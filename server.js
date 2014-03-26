@@ -1,37 +1,33 @@
-// server.js
-// =========
- 
-// Incluímos las dependencias que vamos a usar
-var express  = require("express"),
-    app      = express(),
-    http     = require("http"),
-    server   = http.createServer(app);
- 	mongoose = require("mongoose");
+var express = require("express");
+var functions = require("./routes/functions");
 
-// Configuramos la app para que pueda realizar métodos REST
-app.configure(function () {
-  app.use(express.bodyParser()); // JSON parsing
-  app.use(express.methodOverride()); // HTTP PUT and DELETE support
-  app.use(app.router); // simple route management
+
+var app = express();
+app.use(express.bodyParser());
+
+
+functions.initDB(function (err){
+    if(err){
+
+      console.log("Unable to connect to database");
+
+    } 
+    else{
+
+        console.log("Connected to Database");
+                
+        var server = app.listen(3000, function() {
+            console.log('Listening on port %d', server.address().port);
+        });
+        
+    }
+    
 });
 
-routes = require('./routes/tshirts')(app);
-
-// Conexión
-mongoose.connect('mongodb://localhost/tshirts', function(err, res) {
-  if(err) {
-    console.log('ERROR: connecting to Database. ' + err);
-  } else {
-    console.log('Connected to Database');
-  }
-});
-
-// petición GET del root que sólo muestre "Hello world!"
-app.get('/', function(req, res) {
-  res.send("Hello world!");
-});
- 
-// El servidor escucha en el puerto 3000
-server.listen(3000, function() {
-  console.log("Node server running on http://localhost:3000");
-});
+//Link routes and functions
+app.get('/tshirts', functions.getAll);
+app.get('/tshirt/:id', functions.getOne);
+app.post('/tshirt', functions.addTshirt);
+app.put('/tshirt/:id', functions.updateTshirt);
+app.delete('/tshirt/:id', functions.deleteTshirt);
+app.get('/hot', functions.getHot);
